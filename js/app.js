@@ -315,7 +315,7 @@
   // For now: only 마플시너지 can be the "currently solving" workbook, and only
   // 쎈 is available as a "find similar type" target. Listed as id arrays so more
   // workbooks can be added later without reworking this logic.
-  const SOURCE_WORKBOOK_IDS = ["mapl-synergy-common2"];
+  const SOURCE_WORKBOOK_IDS = ["mapl-synergy-common2", "rpm-common2"];
   const TARGET_WORKBOOK_IDS = ["ssen-common2"];
 
   // Maps a workbookId to its full problem-content lookup (text/choices/figure),

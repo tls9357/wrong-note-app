@@ -1,6 +1,6 @@
 // Wrong-note-app service worker: caches all app assets so the app works fully
 // offline after the first successful load (install once while online).
-const CACHE_NAME = "wrong-note-cache-v1";
+const CACHE_NAME = "wrong-note-cache-v2";
 
 const CORE_ASSETS = [
   "./",
