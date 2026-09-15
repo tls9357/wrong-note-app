@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수학 오답노트</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2a78d6" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>📘 수학 오답노트</h1>
+      <nav class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="analyze">유형 분석</button>
+        <button class="tab-btn" data-tab="list">오답 목록</button>
+        <button class="tab-btn" data-tab="add">오답 추가</button>
+        <button class="tab-btn" data-tab="stats">통계</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- 유형 분석 화면 -->
+      <section id="tab-analyze" class="tab-panel active">
+        <div class="field">
+          <label>현재 풀고있는 문제집</label>
+          <select id="sourceWorkbookSelect"></select>
+        </div>
+        <div class="field">
+          <label>같은 유형 문제를 찾을 문제집 (여러 개 선택 가능)</label>
+          <div id="targetWorkbookChips" class="chip-group"></div>
+        </div>
+        <div class="field">
+          <label>학생이 틀린 문제 번호</label>
+          <textarea id="wrongNumbersInput" rows="3" placeholder="예: 23, 45, 108, 0231 (쉼표/공백/줄바꿈으로 구분)"></textarea>
+        </div>
+        <button type="button" id="analyzeBtn" class="primary-btn">유형 집계하기</button>
+
+        <div id="analyzeResult" class="analyze-result"></div>
+      </section>
+
+      <!-- 목록 화면 -->
+      <section id="tab-list" class="tab-panel">
+        <div class="filter-row">
+          <input type="search" id="searchInput" placeholder="문제, 메모, 단원 검색..." />
+        </div>
+        <div id="entryList" class="entry-list"></div>
+        <p id="emptyMsg" class="empty-msg" hidden>아직 등록된 오답이 없어요. "오답 추가" 탭에서 첫 문제를 등록해보세요!</p>
+      </section>
+
+      <!-- 추가 화면 -->
+      <section id="tab-add" class="tab-panel">
+        <form id="entryForm" class="entry-form">
+          <input type="hidden" id="editId" value="" />
+
+          <div class="field">
+            <label>날짜</label>
+            <input type="date" id="entryDate" />
+          </div>
+
+          <div class="field">
+            <label>단원 / 태그 (선택)</label>
+            <input type="text" id="entryTag" placeholder="예: 2단원 - 방정식" />
+          </div>
+
+          <div class="field">
+            <label>등록 방식</label>
+            <div class="mode-toggle">
+              <button type="button" class="mode-btn active" data-mode="text">✍️ 직접 입력</button>
+              <button type="button" class="mode-btn" data-mode="photo">📷 사진 등록</button>
+            </div>
+          </div>
+
+          <div id="modeText" class="mode-section">
+            <div class="field">
+              <label>문제 내용</label>
+              <textarea id="problemText" rows="3" placeholder="문제를 입력하세요"></textarea>
+            </div>
+          </div>
+
+          <div id="modePhoto" class="mode-section" hidden>
+            <div class="field">
+              <label>문제 사진</label>
+              <input type="file" id="problemPhoto" accept="image/*" capture="environment" />
+              <div class="photo-preview" id="photoPreview" hidden>
+                <img id="photoPreviewImg" alt="문제 사진 미리보기" />
+                <button type="button" id="removePhotoBtn" class="link-btn">사진 삭제</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>정답</label>
+            <input type="text" id="correctAnswer" placeholder="정답" />
+          </div>
+
+          <div class="field">
+            <label>내가 쓴 답 (선택)</label>
+            <input type="text" id="myAnswer" placeholder="내가 쓴 답" />
+          </div>
+
+          <div class="field">
+            <label>해설 / 메모 (선택)</label>
+            <textarea id="memo" rows="3" placeholder="틀린 이유, 풀이 포인트 등을 적어보세요"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancelEditBtn" class="secondary-btn" hidden>수정 취소</button>
+            <button type="submit" class="primary-btn" id="submitBtn">오답 저장</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 통계 화면 -->
+      <section id="tab-stats" class="tab-panel">
+        <div class="stat-tiles" id="statTiles"></div>
+        <div class="chart-card">
+          <h3>단원별 오답 수</h3>
+          <div id="tagChart" class="chart-holder"></div>
+        </div>
+        <div class="chart-card">
+          <h3>최근 14일 추이</h3>
+          <div id="trendChart" class="chart-holder"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="detailModal" class="modal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="worksheetModal" class="modal" hidden>
+    <div class="modal-card worksheet-modal-card">
+      <div class="worksheet-toolbar no-print">
+        <button type="button" class="secondary-btn" id="worksheetCloseBtn">닫기</button>
+        <button type="button" class="primary-btn" id="worksheetPrintBtn">🖨️ 인쇄 / PDF로 저장</button>
+      </div>
+      <div id="worksheetContent"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/image.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="data/mathTypes.js"></script>
+  <script src="data/typeCrossRef.js"></script>
+  <script src="data/ssenProblems.js"></script>
+  <script src="js/typeAnalysis.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
